@@ -1,0 +1,4 @@
+*
+!*.md
+!log.py
+!.gitignore
