@@ -22,17 +22,20 @@ class log(object):
         }
 
         self.type = 1
-        self.spaces = ' ' * 12
+        self.spaces = ' ' * 16
         self.prefix = ''
         self.suffix = ''
         self.value_prefix = ''
         self.value_suffix = ''
 
-    def get_value_prefix(self):
-        return eval(self.value_prefix) + ' ' if self.value_prefix else ''
+    def eval(self, value, color):
+        return eval(value).replace('{color}', color).replace('{clear}', '[CC]') + ' ' if value else ''
 
-    def get_value_suffix(self):
-        return eval(self.value_suffix) + ' ' if self.value_suffix else ''
+    def get_value_prefix(self, color):
+        return self.eval(self.value_prefix, color)
+
+    def get_value_suffix(self, color):
+        return self.eval(self.value_suffix, color)
 
     def log(self, value, prefix='', suffix='', color='', type=''):
         type = type if type != '' else self.type
@@ -43,11 +46,11 @@ class log(object):
         prefix = str(prefix if prefix else self.prefix)
         suffix = str(suffix if suffix else self.suffix)
 
-        value = f"{color}{self.get_value_prefix().replace('{color}', color).replace('{clear}', '[CC]').replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix().replace('{color}', color).replace('{clear}', '[CC]').replace('{suffix}', suffix)}{self.spaces}[CC]"
+        value = f"{color}{self.get_value_prefix(color).replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix(color).replace('{suffix}', suffix)}[CC]{self.spaces}"
         with self.lock:
             print(self.utils.colors(value, self.patterns))
 
-    def log_replace(self, value):
+    def log_replace(self, value, color='[G1]'):
         with self.lock:
-            sys.stdout.write(self.utils.colors(f'{value}{self.spaces}[CC]\r', self.patterns))
+            sys.stdout.write(self.utils.colors(f'{color}{value}[CC]{self.spaces}\r', self.patterns))
             sys.stdout.flush()
