@@ -22,7 +22,7 @@ class log(object):
         }
 
         self.type = 1
-        self.spaces = ' ' * 16
+        self.spaces = ' ' * 8
         self.prefix = ''
         self.suffix = ''
         self.value_prefix = ''
@@ -52,5 +52,10 @@ class log(object):
 
     def log_replace(self, value, color='[G1]'):
         with self.lock:
-            sys.stdout.write(self.utils.colors(f'{color}{value}[CC]{self.spaces}\r', self.patterns))
+            sys.stdout.write(self.utils.colors(f'{color}{value}[CC]{self.spaces}{self.spaces}\r', self.patterns))
             sys.stdout.flush()
+
+    def keyboard_interrupt(self):
+        sys.stdout.write(f'{self.spaces}\r')
+        sys.stdout.flush()
+        self.log(f'Keyboard interrupted {self.spaces} {self.spaces}       \n\n|   Ctrl-C again if not exiting automaticly \n|   Please wait... \n| \n', color='[R1]', type=0)
