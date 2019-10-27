@@ -34,13 +34,13 @@ class log(object):
     def eval(self, value, color):
         return eval(value).replace('{color}', color).replace('{clear}', '[CC]') + ' ' if value else ''
 
-    def get_value_prefix(self, color):
-        return self.eval(self.value_prefix, color)
+    def get_value_prefix(self, value_prefix, color):
+        return self.eval(self.value_prefix if value_prefix is not None else '', color)
 
-    def get_value_suffix(self, color):
-        return self.eval(self.value_suffix, color)
+    def get_value_suffix(self, value_suffix, color):
+        return self.eval(self.value_suffix if value_suffix is not None else '', color)
 
-    def log(self, value, prefix='', suffix='', color='', type=''):
+    def log(self, value, prefix='', suffix='', value_prefix='', value_suffix='', color='', type=''):
         type = type if type != '' else self.type
 
         if self.type < type:
@@ -49,7 +49,7 @@ class log(object):
         prefix = str(prefix if prefix else self.prefix)
         suffix = str(suffix if suffix else self.suffix)
 
-        value = f"{color}{self.get_value_prefix(color).replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix(color).replace('{suffix}', suffix)}[CC]{self.spaces}"
+        value = f"{color}{self.get_value_prefix(value_prefix, color).replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix(value_suffix, color).replace('{suffix}', suffix)}[CC]{self.spaces}"
         with self.lock:
             print(self.utils.colors(value, self.patterns))
 
