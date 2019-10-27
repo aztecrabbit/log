@@ -1,6 +1,9 @@
 import sys
 import datetime
+import colorama
 from ..utils.utils import utils
+
+colorama.init()
 
 class log(object):
     def __init__(self):
