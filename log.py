@@ -1,4 +1,5 @@
 import sys
+import time
 import datetime
 import colorama
 from ..utils.utils import utils
@@ -9,8 +10,8 @@ class log(object):
     def __init__(self):
         super(log, self).__init__()
 
-        self.utils = utils(__file__)
-        self.lock = self.utils.lock
+        self.libutils = utils(__file__)
+        self.lock = self.libutils.lock
 
         self.patterns = {
             'CC' : '\033[0m',    'BB' : '\033[1m',
@@ -25,7 +26,6 @@ class log(object):
         }
 
         self.type = 1
-        self.spaces = ' ' * 8
         self.prefix = ''
         self.suffix = ''
         self.value_prefix = ''
@@ -49,16 +49,48 @@ class log(object):
         prefix = str(prefix if prefix else self.prefix)
         suffix = str(suffix if suffix else self.suffix)
 
-        value = f"{color}{self.get_value_prefix(value_prefix, color).replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix(value_suffix, color).replace('{suffix}', suffix)}[CC]{self.spaces}"
+        value = f"{color}{self.get_value_prefix(value_prefix, color).replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix(value_suffix, color).replace('{suffix}', suffix)}[CC]"
+        value = self.libutils.colors(value, self.patterns)
         with self.lock:
-            print(self.utils.colors(value, self.patterns))
-
-    def log_replace(self, value, color='[G1]'):
-        with self.lock:
-            sys.stdout.write(self.utils.colors(f'{color}{value}[CC]{self.spaces}{self.spaces}\r', self.patterns))
+            sys.stdout.write('\033[K' + value + '\033[0m' + '\n')
             sys.stdout.flush()
 
+    def log_tab(self, value, value_tab, tab='|   ', prefix='', suffix='', value_prefix='', value_suffix='', color='', type=''):
+        value += '\n\n'
+
+        for i in range(len(value_tab)):
+            value += tab + str(value_tab[i]) + '\n'
+
+        value += tab.rstrip() + '\n'
+
+        self.log(value, prefix=prefix, suffix=suffix, value_prefix=value_prefix, value_suffix=value_suffix, color=color, type=type)
+
+    def log_replace(self, value, color='[G1]'):
+        terminal_columns = self.libutils.terminal_size()['columns']
+        value = value[:terminal_columns-3] + '...' if len(value) > terminal_columns else value
+        value = self.libutils.colors(f'{color}{value}', self.patterns)
+        with self.lock:
+            sys.stdout.write('\033[K' + value + '\033[0m' + '\r')
+            sys.stdout.flush()
+
+    def sleep(self, interval=10, value='Resumming in {interval} seconds', value_resumming='Resumming...', color='[R1]'):
+        while interval > 0:
+            if not value:
+                interval = interval - 1
+                time.sleep(1)
+                continue
+
+            self.log_replace(value.replace('{interval}', str(interval)), color=color)
+            interval = interval - 1
+            time.sleep(1)
+
+        if not value_resumming:
+            return
+
+        self.log(value_resumming)
+
     def keyboard_interrupt(self):
-        sys.stdout.write(f'{self.spaces}\r')
-        sys.stdout.flush()
-        self.log(f'Keyboard interrupted {self.spaces} {self.spaces}       \n\n|   Ctrl-C again if not exiting automaticly \n|   Please wait... \n| \n', color='[R1]', type=0)
+        with self.lock:
+            sys.stdout.write('\r')
+            sys.stdout.flush()
+            self.log_tab('Keyboard interrupted', ['Ctrl-C again if not exiting automaticly','Please wait...'], color='[R1]', type=0)
