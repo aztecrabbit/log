@@ -73,7 +73,7 @@ class log(object):
             sys.stdout.write('\033[K' + value + '\033[0m' + '\r')
             sys.stdout.flush()
 
-    def sleep(self, interval=10, value='Resumming in {interval} seconds', value_resumming='Resumming...', color='[R1]'):
+    def sleep(self, interval=10, value='Resumming in {interval} seconds', value_resumming='Resumming...', color='[R1]', color_resumming='[G1]'):
         while interval > 0:
             if not value:
                 interval = interval - 1
@@ -87,7 +87,7 @@ class log(object):
         if not value_resumming:
             return
 
-        self.log(value_resumming)
+        self.log(value_resumming, color=color_resumming)
 
     def keyboard_interrupt(self):
         with self.lock:
