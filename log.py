@@ -6,6 +6,7 @@ from ..utils.utils import utils
 
 colorama.init()
 
+
 class log(object):
     def __init__(self):
         super(log, self).__init__()
@@ -13,8 +14,7 @@ class log(object):
         self.libutils = utils(__file__)
         self.lock = self.libutils.lock
 
-        self.patterns = [
-            ('CC', '\033[0m'),    ('BB', '\033[1m'),
+        self.patterns = (
             ('D1', '\033[30;1m'), ('D2', '\033[30;2m'),
             ('R1', '\033[31;1m'), ('R2', '\033[31;2m'),
             ('G1', '\033[32;1m'), ('G2', '\033[32;2m'),
@@ -22,8 +22,8 @@ class log(object):
             ('B1', '\033[34;1m'), ('B2', '\033[34;2m'),
             ('P1', '\033[35;1m'), ('P2', '\033[35;2m'),
             ('C1', '\033[36;1m'), ('C2', '\033[36;2m'),
-            ('W1', '\033[37;1m'), ('W2', '\033[37;2m'),
-        ]
+            ('W1', '\033[37;1m'), ('W2', '\033[37;2m'), ('CC', '\033[0m'), ('BB', '\033[1m'),
+        )
 
         self.type = 1
         self.prefix = ''
@@ -49,13 +49,19 @@ class log(object):
         prefix = str(prefix if prefix else self.prefix)
         suffix = str(suffix if suffix else self.suffix)
 
-        value = f"{color}{self.get_value_prefix(value_prefix, color).replace('{prefix}', prefix)}{color}{value}{color}{self.get_value_suffix(value_suffix, color).replace('{suffix}', suffix)}[CC]"
+        value = (
+            f"{color}{self.get_value_prefix(value_prefix, color).replace('{prefix}', prefix)}"
+            f"{color}{value}"
+            f"{color}{self.get_value_suffix(value_suffix, color).replace('{suffix}', suffix)}[CC]"
+        )
         value = self.libutils.colors(value, self.patterns)
         with self.lock:
             sys.stdout.write('\033[K' + value + '\033[0m' + '\n')
             sys.stdout.flush()
 
-    def log_tab(self, value, value_tab, tab='|   ', prefix='', suffix='', value_prefix='', value_suffix='', color='', type=''):
+    def log_tab(
+            self, value, value_tab, tab='|   ', prefix='', suffix='', value_prefix='', value_suffix='',
+            color='', type=''):
         value += '\n\n'
 
         for i in range(len(value_tab)):
@@ -63,17 +69,21 @@ class log(object):
 
         value += tab.rstrip() + '\n'
 
-        self.log(value, prefix=prefix, suffix=suffix, value_prefix=value_prefix, value_suffix=value_suffix, color=color, type=type)
+        self.log(
+            value, prefix=prefix, suffix=suffix, value_prefix=value_prefix, value_suffix=value_suffix,
+            color=color, type=type)
 
     def log_replace(self, value, color='[G1]'):
         terminal_columns = self.libutils.get_terminal_size()['columns']
-        value = value[:terminal_columns-3] + '...' if len(value) > terminal_columns else value
+        value = value[:terminal_columns - 3] + '...' if len(value) > terminal_columns else value
         value = self.libutils.colors(f'{color}{value}', self.patterns)
         with self.lock:
             sys.stdout.write('\033[K' + value + '\033[0m' + '\r')
             sys.stdout.flush()
 
-    def sleep(self, interval=10, value='Resumming in {interval} seconds', value_resumming='Resumming...', color='[R1]', color_resumming='[G1]'):
+    def sleep(
+            self, interval=10, value='Resumming in {interval} seconds', value_resumming='Resumming...',
+            color='[R1]', color_resumming='[G1]'):
         while interval > 0:
             if not value:
                 interval = interval - 1
@@ -93,4 +103,6 @@ class log(object):
         with self.lock:
             sys.stdout.write('\r')
             sys.stdout.flush()
-            self.log_tab('Keyboard interrupted', ['Ctrl-C again if not exiting automaticly','Please wait...'], color='[R1]', type=0)
+            self.log_tab(
+                'Keyboard interrupted', ['Ctrl-C again if not exiting automaticly', 'Please wait...'],
+                color='[R1]', type=0)
