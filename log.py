@@ -73,7 +73,7 @@ class log(object):
             value, prefix=prefix, suffix=suffix, value_prefix=value_prefix, value_suffix=value_suffix,
             color=color, type=type)
 
-    def log_replace(self, value, color='[G1]'):
+    def log_replace(self, value='', color='[G1]'):
         terminal_columns = self.libutils.get_terminal_size()['columns']
         value = value[:terminal_columns - 3] + '...' if len(value) > terminal_columns else value
         value = self.libutils.colors(f'{color}{value}', self.patterns)
@@ -95,6 +95,7 @@ class log(object):
             time.sleep(1)
 
         if not value_resumming:
+            self.log_replace()
             return
 
         self.log(value_resumming, color=color_resumming)
